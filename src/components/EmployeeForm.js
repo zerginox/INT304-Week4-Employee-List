@@ -1,5 +1,5 @@
 import React from "react";
-import "../EmployeeForm.css";
+import { normalizeEmployee } from "../state/employeeStore";
 
 class EmployeeForm extends React.Component {
   constructor(props) {
@@ -11,6 +11,7 @@ class EmployeeForm extends React.Component {
       title: "",
       department: "",
       submitted: false,
+      error: "",
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -22,6 +23,7 @@ class EmployeeForm extends React.Component {
     this.setState({
       [name]: value,
       submitted: false,
+      error: "",
     });
   }
 
@@ -35,7 +37,13 @@ class EmployeeForm extends React.Component {
       department: this.state.department.trim(),
     };
 
-    if (Object.values(employee).some((value) => !value)) return;
+    if (!normalizeEmployee({ ...employee, id: "validation" })) {
+      this.setState({
+        error: "Enter complete fields and a valid email address.",
+        submitted: false,
+      });
+      return;
+    }
     this.props.onAddEmployee(employee);
 
     this.setState({
@@ -44,6 +52,7 @@ class EmployeeForm extends React.Component {
       title: "",
       department: "",
       submitted: true,
+      error: "",
     });
   }
 
@@ -52,72 +61,87 @@ class EmployeeForm extends React.Component {
     const submitLabel = this.props.submitLabel || "Add Employee";
 
     return (
-      <section className="employee-card" aria-labelledby="employee-form-heading">
-          <h1 id="employee-form-heading">{heading}</h1>
-          <p className="form-intro">
-            Enter the new employee information below. All fields are required.
-          </p>
+      <section
+        className="employee-card"
+        aria-labelledby="employee-form-heading"
+      >
+        <p className="eyebrow">GROW YOUR DIRECTORY</p>
+        <h2 id="employee-form-heading">{heading}</h2>
+        <p className="form-intro">
+          Enter the new employee information below. All fields are required.
+        </p>
 
-          <form className="employee-form" onSubmit={this.handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={this.state.name}
-                onChange={this.handleChange}
-                autoComplete="name"
-                required
-              />
-            </div>
+        <form className="employee-form" onSubmit={this.handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={this.state.name}
+              onChange={this.handleChange}
+              autoComplete="name"
+              maxLength={100}
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={this.state.email}
-                onChange={this.handleChange}
-                autoComplete="email"
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={this.state.email}
+              onChange={this.handleChange}
+              autoComplete="email"
+              maxLength={254}
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="title">Job Title</label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={this.state.title}
-                onChange={this.handleChange}
-                autoComplete="organization-title"
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="title">Job Title</label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              value={this.state.title}
+              onChange={this.handleChange}
+              autoComplete="organization-title"
+              maxLength={100}
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="department">Department</label>
-              <input
-                id="department"
-                name="department"
-                type="text"
-                value={this.state.department}
-                onChange={this.handleChange}
-                required
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="department">Department</label>
+            <input
+              id="department"
+              name="department"
+              type="text"
+              maxLength={100}
+              value={this.state.department}
+              onChange={this.handleChange}
+              required
+            />
+          </div>
 
-            <button type="submit">{submitLabel}</button>
-          </form>
+          {this.state.error && (
+            <p className="form-error" role="alert">
+              {this.state.error}
+            </p>
+          )}
+          <button className="primary-button" type="submit">
+            {submitLabel} <span aria-hidden="true">+</span>
+          </button>
+        </form>
 
-          <p className="form-status" aria-live="polite">
-            {this.state.submitted
-              ? "Employee added to the list. The form is ready for another entry."
-              : ""}
-          </p>
+        <p className="form-status" aria-live="polite">
+          {this.state.submitted
+            ? "Employee added to the list. The form is ready for another entry."
+            : ""}
+        </p>
       </section>
     );
   }
